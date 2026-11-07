@@ -1,0 +1,34 @@
+# Unity generated folders (rebuilt automatically)
+Library/
+Temp/
+Obj/
+Logs/
+UserSettings/
+Build/
+Builds/
+MemoryCaptures/
+Recordings/
+
+# Editors / IDE generated
+.vscode/
+.vs/
+.idea/
+*.csproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.pidb
+*.booproj
+
+# Test screenshots and build outputs
+Assets/Screenshots/
+Assets/Screenshots.meta
+*.apk
+*.aab
+*.unitypackage
+
+# OS junk and logs
+.DS_Store
+Thumbs.db
+*.log
