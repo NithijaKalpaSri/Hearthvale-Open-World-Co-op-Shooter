@@ -223,7 +223,9 @@ Unity 6 · URP · C# · Unity Input System · procedural meshes and textures gen
 
 ## 📄 License
 
-Add a `LICENSE` file (for example MIT). Only upload audio, images and voice recordings you have the rights to use.
+**© 2026 Hearthvale. All rights reserved.**
+
+This repository is published for viewing only. No license is granted to copy, modify, redistribute or use the code, art, audio or any other content in this project without the author's written permission.
 
 <div align="center">
 
