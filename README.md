@@ -1,19 +1,17 @@
-[Uploading README.github.md…]()
 <div align="center">
 
 # 🌸 Hearthvale
 
-### Open-World Co-op Shooter
+### Open-World Co-op Shooter · Unity Edition
 
-**Explore a sun-baked island town · fly alien hover-craft · survive haunted nights · gas the Stinkers with your friends**
+**Explore a sun-baked island town · fly alien hover-craft · survive haunted nights · gas the Stinkers**
 
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Browser-blue)
-![Engine](https://img.shields.io/badge/engine-Three.js%20%2B%20Electron-black)
-![Multiplayer](https://img.shields.io/badge/co--op-peer--to--peer-green)
-![Unity port](https://img.shields.io/badge/Unity%20port-in%20progress-orange)
-![Status](https://img.shields.io/badge/status-in%20development-yellow)
+![Engine](https://img.shields.io/badge/Unity-6000.6.8f1-black?logo=unity)
+![Pipeline](https://img.shields.io/badge/render%20pipeline-URP-blue)
+![Language](https://img.shields.io/badge/language-C%23-239120)
+![Status](https://img.shields.io/badge/status-work%20in%20progress-orange)
 
-[⬇️ Download](#-download) · [🎮 Controls](#-controls) · [🤝 Co-op](#-play-with-friends) · [🛠 Build](#-run-from-source) · [🗺 World](#-the-world)
+[🎮 Controls](#-controls) · [🚀 Open the project](#-open-the-project) · [🗺 World](#-the-world) · [📁 Structure](#-project-structure) · [🗓 Roadmap](#-roadmap)
 
 <img src="docs/screenshots/town-south-gate.jpg" alt="Hearthvale: the South Gate of the Old Quarter" width="90%">
 
@@ -21,18 +19,11 @@
 
 ---
 
-## ✨ Game at a glance
+## ✨ About
 
-| | |
-|---|---|
-| 🏝 **Open world** | A seeded island with a dense, enterable town, forests, beaches and a stadium |
-| 🔫 **6 weapons** | Pistols to snipers, with real 2x–6x scopes, recoil and breath-hold |
-| 🛸 **Hover-craft** | 3 alien vehicles with crash physics, cannons and rockets |
-| 🦛 **Stinkers** | Hippos, crocodiles, gorillas and capybaras that fart toxic gas |
-| 🌗 **Day / night** | 24-minute game day, dynamic weather, horror nights |
-| 👻 **Ghosts** | 3 haunting ghosts, plus throwable ghost traps |
-| 🎸 **Live concert** | A band plays in the Arena, then the lost fans rise at night |
-| 🤝 **Co-op** | Host with a 4-letter room code, no server needed |
+Hearthvale is a cozy open-world shooter set on a seeded island with a dense, enterable town. This repository is the **Unity (URP) rebuild** of the original Three.js game, with more realistic characters, better physics and good performance on low-end and integrated graphics.
+
+The world is generated in code from a fixed seed (identical to the original game), so the island, the town and all loot spawn in the same places every time.
 
 ---
 
@@ -73,27 +64,46 @@
 
 <img src="docs/screenshots/stinkers.jpg" alt="Hippo, crocodile, gorilla and capybara" width="80%">
 
-> Chunky, harmless-looking animals that waddle up, turn around and gas you. Only 2 are around at once (1 at night), and they get bolder in storms.
-
-<!--
-  🎬 Tip: record a 10-15 second gameplay GIF (ScreenToGif is free), save it as docs/screenshots/gameplay.gif
-  and add it right under the title with:  <img src="docs/screenshots/gameplay.gif" width="90%">
--->
+> Chunky animals (hippos, crocodiles, gorillas, capybaras) that waddle up, turn around and gas you with toxic green clouds.
 
 ---
 
-## ⬇️ Download
+## ✅ What's in the Unity build
 
-Get the latest build from the **[Releases page](../../releases)**.
-
-| File | Description |
+| Area | Status |
 |---|---|
-| 💿 `Hearthvale-Setup-1.0.0.exe` | Installer with Start-menu and desktop shortcuts |
-| 📦 `Hearthvale-Portable-1.0.0.exe` | One file, no install, double-click to play |
+| 🏝 Island terrain, water, sky, day/night cycle | ✅ Done |
+| 🏘 Old Quarter: 26 enterable buildings, real physics doors, props, lamps | ✅ Done |
+| 🌳 Trees, bushes, flowers, rocks, grass, fireflies | ✅ Done |
+| 🧍 First and third person player with a sculpted, skinned human avatar | ✅ Done |
+| 🔫 6 guns, scopes 2x–6x, ammo, reload, recoil, loot | ✅ Done |
+| 🦛 Stinkers with gas clouds and player health and respawn | ✅ Done |
+| 👻 3 ghosts, horror night, flashlight, ghost traps and the cave | ✅ Done |
+| 🛸 3 hover-craft with crash physics, cannons and rockets | ✅ Done |
+| 🎸 Arena with a live band, dancing crowd and haunted night | ✅ Done |
+| 🌦 Weather, 🛵 Scooty Boy, 🚛 traffic, menus and map | 🔜 Planned |
+| 🤝 Co-op networking | 🔜 Planned |
 
-Everything is bundled, so solo play works fully **offline**.
+---
 
-> ⚠️ Windows may show *"Windows protected your PC"* because the app isn't code-signed. Click **More info → Run anyway**.
+## 🚀 Open the project
+
+**Requirements**
+- **Unity 6000.6.8f1** (Unity 6) with the **Universal Render Pipeline**
+- A GPU with Vulkan or DX11 support. Runs on integrated graphics.
+
+**Steps**
+
+```bash
+git clone https://github.com/NithijaKalpaSri/Game.git
+```
+
+1. Open **Unity Hub → Add → Add project from disk** and select the cloned folder.
+2. Open the scene `Assets/Scenes/SampleScene`.
+3. Press **Play**. A `GameBootstrap` object builds the whole world at runtime.
+
+> ⏳ The first start sculpts the characters and creatures in code, which takes about **15–40 seconds**.
+> ⚠️ After editing any script, **stop Play mode and start it again**. The runtime-built scene can break otherwise.
 
 ---
 
@@ -114,10 +124,10 @@ Everything is bundled, so solo play works fully **offline**.
 | `R` | Reload |
 | `1`–`6`, wheel | Switch weapon |
 | `T` | Swap scope |
-| `Shift` (scoped) | Hold breath |
 | `G` (hold) | Aim ghost trap, release to throw |
 | `L` | Flashlight |
 | `F` | Open doors, board craft |
+| `V` | Change camera view |
 
 </td><td>
 
@@ -130,19 +140,8 @@ Everything is bundled, so solo play works fully **offline**.
 | `Space` | Brake |
 | `LMB` | Plasma cannons |
 | `RMB` | Rocket |
-| `C` | Look behind |
-| `H` | Honk |
+| `V` | Cycle chase cameras |
 | `F` | Leave craft |
-
-**Anywhere**
-
-| Key | Action |
-|---|---|
-| `V` | Cycle camera views |
-| `M` | Island map, set waypoint |
-| `Alt` | Show or hide cursor |
-| `F11` | Fullscreen |
-| `Esc` | Pause and settings |
 
 </td></tr>
 </table>
@@ -152,46 +151,22 @@ Everything is bundled, so solo play works fully **offline**.
 ## 🗺 The world
 
 <details>
-<summary><b>🏘 The Old Quarter</b> (click to expand)</summary>
+<summary><b>🏘 The Old Quarter</b></summary>
 
 <br>
 
-You spawn in the **South Gate** yard of a dense stone district built for tactical firefights:
+You spawn in the **South Gate** yard of a dense stone district built for tactical firefights: **Mid**, **Long** (to Site A), **West Alley** and the covered **Tunnel** (to Site B), plus short routes, two market rows and small courtyards with loot.
 
-- **Mid:** the central lane, split by a gate with one narrow doorway
-- **Long:** the eastern lane leading to **Site A**
-- **West Alley** and the covered **Tunnel**, leading to **Site B**
-- **A Short, A Ramp, B Short:** tight side routes into each site
-- **Bazaar Row** (south) and **Rampart Row** (north)
-- **Well Yard** and **Olive Yard:** small courtyards with loot
-
-26 buildings can be entered through real doors. About half are **locked**: shoot or rocket them until they burst apart (they come back after 5 minutes).
-
-🏠 Houses · 🏢 Apartments (two floors) · 🏪 Stores · 🏭 Warehouses with crates to climb
+26 buildings can be entered through real doors. About half are **locked**: shoot or rocket them until they burst apart.
 
 </details>
 
 <details>
-<summary><b>🔫 Weapons, scopes and loot</b></summary>
+<summary><b>🌗 Day and night</b></summary>
 
 <br>
 
-Six guns, including three long guns: the **Thistle Marksman**, the **Lavender Longshot** and the heavy **Kestrel Bolt-Action**. Scopes (2x, 3x, 4x, 6x, with 6x the rarest) spawn only **inside buildings**. Magnification is real: the view zooms by that exact factor, mouse speed drops to match, and your aim sways with your breathing unless you hold `Shift`.
-
-Weapons, ammo and picnic baskets (healing) respawn after 90 seconds.
-
-</details>
-
-<details>
-<summary><b>🌗 Day, night and weather</b></summary>
-
-<br>
-
-One game day takes **24 real minutes** by default (choose 12, 24 or 48 in Options). You arrive at 06:29 on Day 1, and in co-op everyone follows the host's clock.
-
-**By night** the game turns to horror: near-black fog, flickering lamps, a low drone, whispers and distant knocking. Bullets pass through ghosts, but a **ghost trap** (hold `G`, release to throw) drags whoever steps on it into a cave. Find the crack of light at the far end to escape, or get caught.
-
-Storms bring rain, lightning, fog and wet roads.
+The game clock runs all the time. At night the game turns to horror: near-black fog, flickering lamps and a flashlight. Three ghosts haunt the streets. Bullets pass through them, but a **ghost trap** drags whoever steps on it into a cave. Find the crack of light at the far end to escape.
 
 </details>
 
@@ -200,142 +175,51 @@ Storms bring rain, lightning, fog and wet roads.
 
 <br>
 
-Walk out of the **North Gate** to the open-air **Hearthvale Arena**.
+- **4 PM to 8 PM:** a band plays (singer, guitarist, bassist, keys and a stage drummer) while the crowd dances.
+- **8 PM to 6 AM:** the band is gone and pale lost fans glide toward you whenever you are not looking.
 
-- **4 PM to 8 PM:** a band plays: singer, guitarist, bassist, keyboard player and the star stage drummer with a red drum strapped across his stomach. The crowd dances and the lights sweep.
-- **8 PM to 6 AM:** the band is gone and pale lost fans glide toward you whenever you are not looking at them.
-
-</details>
-
-<details>
-<summary><b>🛵 The Scooty Boy and traffic</b></summary>
-
-<br>
-
-A playboy in a black-and-white helmet and pink shades screeches around town at about 190 km/h on an electric scooter, then stops next to you and raps.
-
-> 🚫 **Never kill him.** If the Scooty Boy dies it's **GAME OVER** and you lose everything.
-
-An old **garbage truck** drives the roads all day, and a party **three-wheeler** comes out at night. They drive on the left, honk at you, and run you over if you stand in the road.
+The drum track is a 3D audio source: loud in the Arena, fading to silence by 80 m, and muffled outside.
 
 </details>
 
 ---
 
-## 🤝 Play with friends
-
-```text
-1. Host   →  click "Host for Friends"  →  get a 4-letter room code
-2. Share  →  Esc → "Copy room code"    →  send it
-3. Join   →  friends enter the code    →  press "Join"
-```
-
-Co-op is peer-to-peer (WebRTC via [PeerJS](https://peerjs.com)), with no game server and no cost. Desktop and browser players can play together. Ghosts are personal: each player gets their own.
-
-<details>
-<summary>Friend can't connect?</summary>
-
-Some mobile networks and office Wi-Fi block direct connections. Add a free TURN server (for example from metered.ca) in `src/network.js` → `ICE_SERVERS`.
-
-</details>
-
----
-
-## ⚙️ Settings
-
-| Option | Choices |
-|---|---|
-| Graphics | Low-end PC · Low · High · Ultra |
-| FPS limit | 30 · 60 · 120 · Unlimited |
-| Day length | 12 · 24 · 48 minutes |
-| Volume | Master · Effects & guns · Weather · Vehicles |
-| Mouse | Sensitivity · Invert Y |
-
-**Low-end PC mode** turns off post-processing, shadows, grass and real street lights, renders at 75% resolution and caps the game at 30 FPS. Pick it for older laptops and integrated graphics.
-
----
-
-## 🛠 Run from source
-
-Requires **Node.js 18+**.
-
-```bash
-git clone https://github.com/<your-username>/Hearthvale-Open-World-Co-op-Shooter.git
-cd Hearthvale-Open-World-Co-op-Shooter
-npm install
-npm run dev
-```
-
-| Command | What it does |
-|---|---|
-| `npm run dev` | Dev server at `http://localhost:5173` |
-| `npm run build` | Build the browser version into `dist/` |
-| `npm run app` | Build and open the desktop app |
-| `npm run dist` | Build installer and portable `.exe` into `release/` |
-
-<details>
-<summary>🧪 Automated self-test of the built .exe</summary>
-
-<br>
-
-Set `HV_SELFTEST` and the app plays through spawn, doors, scopes, driving, night, map and pause, saves a screenshot per step, writes `report.json`, then quits.
-
-```powershell
-$env:HV_SELFTEST = "1"
-$env:HV_SELFTEST_DIR = "$PWD\selftest"
-.\release\Hearthvale-Portable-1.0.0.exe
-```
-
-</details>
-
-<details>
-<summary>🎨 Customising the game</summary>
-
-<br>
-
-- **Voice lines:** drop audio into `src/assets/voices/` (one folder per moment, see the README there)
-- **Fart sounds:** audio you have the rights to use goes in `src/assets/farts/`
-- **Scooty Boy's face:** replace `src/assets/rider/face.webp`
-- **New island:** change `WORLD_SEED` in `src/utils.js`
-
-</details>
-
-<details>
-<summary>📁 Project layout</summary>
-
-<br>
+## 📁 Project structure
 
 | Path | Contents |
 |---|---|
-| `src/main.js` | Game loop and network messages |
-| `src/world.js` | Terrain, Old Quarter, water, day/night, collisions |
-| `src/graphics.js` `sky.js` `weather.js` | Rendering, sky and weather |
-| `src/weapons.js` `vehicles.js` | Guns, loot, hover-craft |
-| `src/critters.js` `gas.js` | Stinkers and gas |
-| `src/concert.js` `rider.js` `traffic.js` | Arena, Scooty Boy, traffic |
-| `src/network.js` `remotes.js` | PeerJS co-op |
-| `src/audio.js` | Synthesized sound and voice lines |
-| `electron/` | Desktop wrapper and self-test |
-| `Unity/` | Unity (URP) port |
-
-</details>
+| `Assets/Scripts/Core` | Math, seeded RNG and noise (identical to the original game) |
+| `Assets/Scripts/World` | Island data, town builder, terrain, water, doors, nature, grass |
+| `Assets/Scripts/Player` | Player controller and the human avatar |
+| `Assets/Scripts/Weapons` | Guns, ammo, loot, effects |
+| `Assets/Scripts/Critters` | Stinkers and gas clouds |
+| `Assets/Scripts/Ghosts` | Ghosts, horror night, ghost traps |
+| `Assets/Scripts/Vehicles` | Hover-craft, garage, vehicle weapons |
+| `Assets/Scripts/Arena` | Stadium, band, crowd |
+| `Assets/Scripts/Organic` | SDF sculpting and skinned mesh generation |
+| `Assets/Shaders` | Custom URP shaders: Lit, Plant, Sky, Skin |
+| `Assets/Editor` | Editor tools (texture generation, watch layout) |
+| `docs/screenshots` | Images used in this README |
 
 ---
 
-## 🧱 Tech stack
-
-[Three.js](https://threejs.org) · [Vite](https://vitejs.dev) · [Electron](https://www.electronjs.org) · [PeerJS](https://peerjs.com) · Unity 6 (URP) for the port
-
 ## 🗓 Roadmap
 
-- [x] Open-world island, Old Quarter, doors and loot
-- [x] Weapons, scopes and hover-craft
-- [x] Stinkers, ghosts and ghost traps
-- [x] Arena concert, Scooty Boy and traffic
-- [x] Peer-to-peer co-op
-- [x] Windows installer and portable `.exe`
-- [ ] Unity port: weather, Scooty Boy, traffic, menus and networking
-- [ ] Gameplay trailer and GIFs
+- [x] World, nature and day/night
+- [x] Weapons, animals, ghosts and traps
+- [x] Hover-craft and vehicle weapons
+- [x] Arena concert
+- [ ] Weather system
+- [ ] Scooty Boy and traffic
+- [ ] Menus, map and settings
+- [ ] Audio pass and remaining voice lines
+- [ ] Co-op networking
+
+---
+
+## 🧱 Tech
+
+Unity 6 · URP · C# · Unity Input System · procedural meshes and textures generated in code
 
 ## 📄 License
 
