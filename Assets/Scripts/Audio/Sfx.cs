@@ -89,6 +89,19 @@ namespace Hearthvale
             s.clip = clip; s.Play();
         }
 
+        // ------------------------------------------------------------------ recorded voice / effect files (Resources/Voices)
+        static readonly Dictionary<string, AudioClip> files = new Dictionary<string, AudioClip>();
+        public static AudioClip File(string name)
+        {
+            AudioClip c; if (files.TryGetValue(name, out c) && c != null) return c;
+            c = Resources.Load<AudioClip>("Voices/" + name); files[name] = c; return c;
+        }
+        /// <summary>Plays a recorded sound; returns false if the file is missing (so callers can fall back to the synth).</summary>
+        public static bool Voice(string name, float volume = 1f, float pitch = 1f)
+        { var c = File(name); if (c == null) return false; Play(c, volume, pitch); return true; }
+        public static void StopVoice(string name) { var c = File(name); if (c == null || pool == null) return; foreach (var s in pool) if (s != null && s.isPlaying && s.clip == c) s.Stop(); }
+        public static bool VoiceAny(float volume, params string[] names) { return Voice(names[UnityEngine.Random.Range(0, names.Length)], volume); }
+
         // ------------------------------------------------------------------ the sounds (same numbers as audio.js)
         public static void Shot(string kind = "pistol", float volume = 1f)
         {
@@ -130,6 +143,7 @@ namespace Hearthvale
         public static void Fart(string kind = "ripple", float volume = 1f, float durScale = 1f)
         {
             if (volume <= 0.01f) return; Init();
+            if (File("fart_sound") != null) { float pk = kind == "deep" ? 0.8f : kind == "squeak" ? 1.3f : kind == "wet" ? 0.95f : 1.05f; Play(File("fart_sound"), volume, pk * UnityEngine.Random.Range(0.93f, 1.07f) / Mathf.Sqrt(Mathf.Max(0.3f, durScale))); return; }
             float[] p; if (!FartKinds.TryGetValue(kind, out p)) p = FartKinds["ripple"];
             System.Func<float> R = () => (float)rnd.NextDouble();
             float dur = p[2] * durScale * (0.8f + R() * 0.5f), f0 = p[0] * (0.85f + R() * 0.3f);

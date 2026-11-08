@@ -27,7 +27,7 @@ namespace Hearthvale
             new[]{"RW","RM"}, new[]{"RM","RNE"}, new[]{"RNE","RE"}, new[]{"RM","MN"}, new[]{"BM","MS"}, new[]{"BSW","WS"} };
         static Dictionary<string, List<string>> ADJ;
 
-        enum St { Away, Ride, Approach, Rap, Leave, Dead }
+        enum St { Away, Ride, Approach, Rap, Leave, Dead, Carry }
         St state = St.Away;
         string from, to; float seg;
         Vector3 pos; float yaw, speed;
@@ -35,7 +35,7 @@ namespace Hearthvale
         float awayT, visitT, meetCd, rapT; int met;
         Vector3 leaveFrom; string rFrom, rTo; float rSeg;
         bool gameOver; float gameOverT;
-        int rapLine; float lineT;
+        int rapLine; float lineT; float carryT; bool offerCursor;
 
         GameObject visual, trail; Avatar av; Transform[] wheels = new Transform[2]; CapsuleCollider col; Material trailMat;
         readonly List<Material> flashMats = new List<Material>();
@@ -196,21 +196,79 @@ namespace Hearthvale
             {
                 hp = 0; state = St.Dead; speed = 0; trail.SetActive(false); visual.SetActive(true);
                 visual.transform.localRotation = Quaternion.Euler(0, 0, 80f); visual.transform.localPosition = new Vector3(0, 0.25f, 0);
-                gameOver = true; gameOverT = 0; player.frozen = true; Cursor.lockState = CursorLockMode.None; Cursor.visible = true; Sfx.Scream(0.6f);
+                gameOver = true; gameOverT = 0; player.frozen = true; Cursor.lockState = CursorLockMode.None; Cursor.visible = true; if (!Sfx.Voice("sad_violin", 1f)) Sfx.Scream(0.6f);
                 return;
             }
             player.Toast(string.Format("🚫 Don't shoot {0}! ({1}% left · if he dies, GAME OVER)", RiderName, Mathf.CeilToInt(hp)));
             if (state == St.Rap || state == St.Approach) Leave();
         }
+        float camY, lastYaw, lean, idleLook, carryAge;
+        /// <summary>Pillion seat + chase camera, after everything else moved this frame (no jitter).</summary>
+        void LateUpdate()
+        {
+            if (state != St.Carry || player == null) return;
+            float dt = Mathf.Max(0.0001f, Time.deltaTime);
+            Quaternion br = Quaternion.Euler(0, yaw * Mathf.Rad2Deg, 0);
+            float turn = Mathf.DeltaAngle(lastYaw * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg) / dt; lastYaw = yaw;
+            lean = Mathf.Lerp(lean, Mathf.Clamp(-turn * 0.18f * Mathf.Clamp01(speed / 15f), -22f, 22f), Mathf.Min(1f, dt * 6f));
+            visual.transform.localRotation = Quaternion.Euler(speed * 0.12f * 0f, 0, lean);
+            Vector3 seat = pos + br * new Vector3(0f, 0.42f, -0.62f);
+            Quaternion tilt = br * Quaternion.Euler(0, 0, lean * 0.6f);
+            player.transform.SetPositionAndRotation(seat, br);
+            var cam = Camera.main; if (cam == null) return;
+            // GTA-style auto-centre: when the mouse is idle the camera swings back behind the bike
+            bool moved = UnityEngine.InputSystem.Mouse.current != null && UnityEngine.InputSystem.Mouse.current.delta.ReadValue().sqrMagnitude > 0.5f;
+            if (moved) idleLook = 0f; else idleLook += dt;
+            float rec = idleLook > 1.2f || carryAge < 1.5f ? 1f : 0f; carryAge += dt;
+            if (rec > 0f) player.SetLook(Mathf.LerpAngle(player.Yaw * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, Mathf.Min(1f, dt * 3.5f)) * Mathf.Deg2Rad, Mathf.Lerp(player.Pitch, 0.16f, Mathf.Min(1f, dt * 3f)));
+            Quaternion look = Quaternion.Euler(-player.Pitch * Mathf.Rad2Deg, player.Yaw * Mathf.Rad2Deg, 0);
+            Vector3 pivot = pos + Vector3.up * 1.7f + br * Vector3.right * 0.35f; Vector3 dir = look * Vector3.back; float d = 4.6f + speed * 0.04f;
+            RaycastHit hit; int mask = ~((1 << PlayerController.PlayerLayer) | (1 << CritterSystem.CritterLayer) | (1 << Garage.VehicleLayer));
+            { float best = d; foreach (var h in Physics.SphereCastAll(pivot, 0.25f, dir, d, mask, QueryTriggerInteraction.Ignore)) { if (h.transform.IsChildOf(player.transform) || h.transform.IsChildOf(transform) || h.distance <= 0f) continue; if (h.distance < best) best = h.distance; } d = Mathf.Max(0.6f, best - 0.05f); }
+            Vector3 p = pivot + dir * d; float g = Mathf.Max(WorldData.HeightAtU(p.x, p.z), WorldData.WaterLevel) + 0.3f; if (p.y < g) p.y = g;
+            cam.transform.SetPositionAndRotation(p, look);
+        }
+
+        void EndOffer() { Sfx.StopVoice("weere_voice"); Sfx.StopVoice("weere_voice_2"); if (offerCursor) { offerCursor = false; if (!gameOver) { Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false; } } }
+        void Answer(bool yes)
+        {
+            EndOffer(); Sfx.StopVoice("weere_voice"); Sfx.StopVoice("weere_voice_2");
+            if (!yes) { player.Toast("🛵 " + RiderName + ": \"No worries, flash!\""); Leave(); return; }
+            // hop on: he carries you along the roads for a while, with his music
+            state = St.Carry; carryT = 28f; player.frozen = true; player.pillion = true; speed = 0f; carryAge = 0f; idleLook = 0f; camY = yaw; player.SetLook(yaw, 0.18f); from = rFrom; to = rTo; seg = rSeg; player.Toast("🛵 Hold tight! Riding with " + RiderName + "…");
+        }
+        void Drop()
+        {
+            player.frozen = false; player.pillion = false; player.transform.rotation = Quaternion.identity; Vector3 side = transform.right * 2.2f; player.Teleport(new Vector3(pos.x + side.x, GroundY(pos, pos.y) + 0.3f, pos.z + side.z));
+            player.Toast("🛵 " + RiderName + " dropped you off. See ya!"); meetCd = Random.Range(70f, 140f); state = St.Ride;
+        }
         void Leave() { state = St.Leave; meetCd = Random.Range(70f, 140f); }
 
         // ------------------------------------------------------------------ behaviour
+        AudioSource bike; bool wasRiding, voiceDone;
+        /// <summary>"weere rides bike" loops as a short-range 3D sound while he rides around town.</summary>
+        void BikeSound()
+        {
+            if (bike == null)
+            {
+                var clip = Sfx.File("weere_rides_bike"); if (clip == null) return;
+                bike = gameObject.AddComponent<AudioSource>(); bike.clip = clip; bike.loop = false; bike.spatialBlend = 0f; bike.rolloffMode = AudioRolloffMode.Linear;
+                bike.minDistance = 6f; bike.maxDistance = 70f; bike.dopplerLevel = 0f; bike.playOnAwake = false;
+            }
+            bool riding = state == St.Carry && !gameOver;
+            bike.volume = Mathf.Clamp01(0.9f * Sfx.Master * Sfx.Effects + 0.2f) * 0.8f;
+            if (riding && !wasRiding) bike.Play();   // plays once, from the start of the ride
+            else if (!riding && bike.isPlaying) bike.Stop();
+            wasRiding = riding;
+        }
+
         void Update()
         {
             if (world == null || player == null) return;
             float dt = Mathf.Min(Time.deltaTime, 0.05f); t += dt;
             if (gameOver) { gameOverT += dt; if (gameOverT > 1.2f && (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame || Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)) Restart(); return; }
             bool day = Daytime();
+            BikeSound();
             if (state == St.Away)
             {
                 if (day && !player.dead) { awayT -= dt; if (awayT <= 0) Appear(); }
@@ -252,16 +310,32 @@ namespace Hearthvale
                     if (!canMeet) Leave();
                     else
                     {
-                        state = St.Rap; speed = 0; met++; rapT = 7f; rapLine = Random.Range(0, Raps.Length); lineT = 0;
-                        Sfx.Crackle(0.35f); Sfx.Hatch();
+                        state = St.Rap; speed = 0; met++; rapT = 7f; offerCursor = true; Cursor.lockState = CursorLockMode.None; Cursor.visible = true; rapLine = Random.Range(0, Raps.Length); lineT = 0;
+                        Sfx.Crackle(0.35f); Sfx.Hatch(); voiceDone = false;
                         if (met == 1) player.Toast("⚠️ " + RiderName + " the Scooty Boy! Never hurt him: if he dies, you lose the whole game.");
                     }
                 }
             }
             else if (state == St.Rap)
             {
-                speed = 0; TurnTo(Mathf.Atan2(dxp, dzp), dt, 5f); rapT -= dt; lineT += dt; if (lineT > 2.2f) { lineT = 0; rapLine = (rapLine + 1) % Raps.Length; }
-                if (rapT <= 0 || distP > 18f || !canMeet) Leave();
+                speed = 0; TurnTo(Mathf.Atan2(dxp, dzp), dt, 5f);
+                // his voice only plays face to face, while he is asking you for the ride
+                if (!voiceDone && distP < 5f && Mathf.Abs(Mathf.DeltaAngle(yaw * Mathf.Rad2Deg, Mathf.Atan2(dxp, dzp) * Mathf.Rad2Deg)) < 20f) { voiceDone = true; Sfx.VoiceAny(1f, "weere_voice", "weere_voice_2"); } lineT += dt; if (lineT > 2.2f) { lineT = 0; rapLine = (rapLine + 1) % Raps.Length; }
+                if (distP > 18f || !canMeet) { EndOffer(); Leave(); }
+                if (Keyboard.current != null) { if (Keyboard.current.yKey.wasPressedThisFrame) Answer(true); else if (Keyboard.current.nKey.wasPressedThisFrame) Answer(false); }
+            }
+            else if (state == St.Carry)
+            {
+                carryT -= dt;
+                // GTA-style: pull away smoothly, brake into corners, hurry on the straights
+                { Vector3 a0 = Lane(from, to, 0), b0 = Lane(from, to, 1); float L0 = Vector3.Distance(a0, b0), edge = Mathf.Min(seg, 1f - seg) * L0; float want = Mathf.Lerp(7f, 22f, Mathf.Clamp01(edge / 14f)); if (carryT < 3f) want = Mathf.Min(want, 6f);
+                  speed = Mathf.MoveTowards(speed, want, (want > speed ? 9f : 20f) * dt); }
+                Vector3 a = Lane(from, to, 0), b = Lane(from, to, 1); float L = Vector3.Distance(a, b);
+                seg += speed * dt / L;
+                while (seg >= 1f) { float over = (seg - 1f) * L; NextRoad(); Vector3 c = Lane(from, to, 0), e = Lane(from, to, 1); seg = over / Vector3.Distance(c, e); }
+                a = Lane(from, to, 0); b = Lane(from, to, 1); pos.x = Mathf.Lerp(a.x, b.x, seg); pos.z = Mathf.Lerp(a.z, b.z, seg);
+                TurnTo(Mathf.Atan2(b.x - a.x, b.z - a.z), dt, 10f);
+                                if (carryT <= 0 || player.dead || !day) { Drop(); }
             }
             else if (state == St.Leave)
             {
@@ -326,6 +400,13 @@ namespace Hearthvale
                     GUI.color = Color.white; GUI.Label(new Rect(x - 130, y - 26, 260, 34), "🛵 " + RiderName, ts);
                     GUI.Label(new Rect(x - 190, y + 10, 380, 60), "“" + Raps[rapLine] + "”", bs);
                 }
+            }
+            if (state == St.Rap && !gameOver)
+            {
+                float bw = 150, bh = 46, cx = Screen.width / 2f, by = Screen.height * 0.72f;
+                GUI.color = Color.white; GUI.Label(new Rect(0, by - 70, Screen.width, 50), "Wanna ride with " + RiderName + "?", ts);
+                if (GUI.Button(new Rect(cx - bw - 10, by, bw, bh), "Yes  (Y)")) Answer(true);
+                if (GUI.Button(new Rect(cx + 10, by, bw, bh), "No  (N)")) Answer(false);
             }
             if (gameOver)
             {

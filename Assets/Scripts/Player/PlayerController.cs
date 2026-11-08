@@ -40,6 +40,8 @@ namespace Hearthvale
 
         public Vector3 Pos { get { return transform.position; } }
         public float Yaw { get { return yaw; } }
+        public bool pillion;   // riding on the back of Weere's scooter (Weere moves us and the camera)
+        public void SetLook(float y, float p) { yaw = y; pitch = p; }
         public float Pitch { get { return pitch; } }
         public Vector3 Velocity { get { return vel; } }
         public bool InputActive { get { return !cursorFree; } }
@@ -195,7 +197,7 @@ namespace Hearthvale
             if (!gassed) { Sfx.Hurt(); hurtFlash = 1f; }
             if (hp <= 0)
             {
-                dead = true; respawnTimer = 5f; vel = Vector3.zero;
+                dead = true; respawnTimer = 5f; vel = Vector3.zero; Sfx.Voice("player_killed_gassed_wasted", 1f);
                 Toast(gassed ? "🤢 You got gassed! Respawning at the South Gate…" : "You got knocked out! Respawning at the South Gate…");
                 return true;
             }
@@ -203,7 +205,7 @@ namespace Hearthvale
         }
         void Respawn()
         {
-            dead = false; hp = 100; var sp = world.town.spawnPoint;
+            dead = false; hp = 100; Sfx.Voice("when_raspawned_after_killed_here_we_go_again", 1f); var sp = world.town.spawnPoint;
             Teleport(new Vector3(sp.x + (Random.value - 0.5f) * 10, WorldData.TownHeight + 0.3f, -sp.z + (Random.value - 0.5f) * 6)); yaw = 0; pitch = 0;
         }
         public void Toast(string t) { toast = t; toastT = 2f; }
@@ -221,13 +223,13 @@ namespace Hearthvale
 
         void LateUpdate()
         {
-            if (cam == null || vehicle != null) return;
+            if (cam == null || vehicle != null || pillion) return;
             float dt = Mathf.Min(Time.deltaTime, 0.05f);
             var c = FootCams[ThirdPerson ? camMode : 0];
             float eyeY = transform.position.y + Eye + (c.dist > 0 ? 0 : Mathf.Sin(bob) * 0.05f);
             Quaternion rot = Quaternion.Euler(-(pitch + recoil * 0.05f) * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, 0);
             cam.transform.rotation = rot;
-            if (c.dist <= 0) { camDist = 0; cam.transform.position = new Vector3(transform.position.x, eyeY, transform.position.z); return; }
+            if (c.dist <= 0) { camDist = 0; cam.transform.position = new Vector3(transform.position.x, eyeY, transform.position.z); DeathCam(dt); return; }
 
             float zoom = aiming ? 0.55f : 1f;
             Vector3 right = rot * Vector3.right;
@@ -248,6 +250,16 @@ namespace Hearthvale
             float ground = Mathf.Max(WorldData.HeightAtU(p.x, p.z), WorldData.WaterLevel) + 0.25f;
             if (p.y < ground) p.y = ground;
             cam.transform.position = p;
+            DeathCam(dt);
+        }
+        float deadCam;
+        /// <summary>GTA-style: when you are wasted the camera sinks to the ground and the world tilts over.</summary>
+        void DeathCam(float dt)
+        {
+            deadCam = dead ? deadCam + dt : 0f; if (deadCam <= 0) return;
+            float k = Mathf.SmoothStep(0, 1, Mathf.Clamp01(deadCam / 1.2f)); var ct = cam.transform;
+            Vector3 p = ct.position; float ground = Mathf.Max(WorldData.HeightAtU(p.x, p.z), WorldData.WaterLevel) + 0.35f; p.y = Mathf.Max(ground, p.y - k * 1.1f); ct.position = p;
+            ct.rotation = ct.rotation * Quaternion.Euler(0, 0, 28f * k);
         }
 
         static Texture2D MakeVignette()

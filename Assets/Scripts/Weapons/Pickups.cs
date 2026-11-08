@@ -95,7 +95,7 @@ namespace Hearthvale
             else if (WeaponData.W.ContainsKey(type)) arsenal.Give(type);
             else if (type == "ammo") arsenal.AddAmmo();
             else player.hp = Mathf.Min(100, player.hp + 50);
-            Sfx.Pickup();
+            if (!(WeaponData.W.ContainsKey(type) && Sfx.Voice("when_get_a_weapon_sound", 1f))) Sfx.Pickup();
             string tail = it.fitted != null ? " → fitted to " + WeaponData.W[it.fitted].name + " (T to swap)" : type.StartsWith("scope") ? " · pick up a rifle or sniper to use it" : "";
             arsenal.Toast("Found: " + Label(type) + tail);
             it.fitted = null;

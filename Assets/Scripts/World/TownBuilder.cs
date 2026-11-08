@@ -14,7 +14,7 @@ namespace Hearthvale
     public sealed class BuildingInfo { public string type; public float x, z; public int f; public float W, D, FH; public int floors; public float yawIn; }
     public sealed class DoorSpec
     {
-        public Vector3 hinge, center; public float yaw, width, height; public bool roller, locked; public SolidBox box;
+        public Vector3 hinge, center; public float yaw, width, height; public bool roller, locked, house; public SolidBox box; public Func<float, float, float, Vector3> toWorld;   // house = a family lives here (see Family.cs)
     }
 
     /// <summary>
@@ -558,7 +558,7 @@ namespace Hearthvale
                 doors.Add(new DoorSpec
                 {
                     hinge = toWorld(-dw / 2, 0.2f, zc), yaw = th, width = dw, height = dh, roller = type == "warehouse",
-                    locked = rng.NextD() < 0.45, box = dbox, center = toWorld(0, 0.2f + 1.0f, zc)
+                    locked = rng.NextD() < 0.45, box = dbox, center = toWorld(0, 0.2f + 1.0f, zc), house = type == "house", toWorld = toWorld
                 });
                 dbox.door = doors.Count - 1;
             }

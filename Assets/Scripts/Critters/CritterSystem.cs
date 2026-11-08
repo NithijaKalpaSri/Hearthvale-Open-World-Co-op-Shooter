@@ -209,7 +209,7 @@ namespace Hearthvale
         // lets out one last sad toot, then puffs away into petals.
         void StartDeath(Critter c, Vector3 dir, float force)
         {
-            list.Remove(c.id); c.dying = true; c.fartT = 0;
+            list.Remove(c.id); c.dying = true; c.fartT = 0; { var mc = Camera.main; float md = mc != null ? Vector3.Distance(c.transform.position, mc.transform.position) : 999f; if (md < 50f) Sfx.Voice("random_animal_sound_meow", 1f - md / 50f); }
             if (c.cc != null) Destroy(c.cc);
             var d = new Dying { c = c, vel = new Vector3(dir.x * force * 0.7f, 3 + force * 0.35f, dir.z * force * 0.7f), spin = new Vector3(dir.z * force, -(Random.value - 0.5f) * 5f, -dir.x * force), rot = new Vector3(0, c.yaw, 0) };
             dying.Add(d);

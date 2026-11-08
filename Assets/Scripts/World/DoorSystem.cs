@@ -25,7 +25,12 @@ namespace Hearthvale
         public void OnShot(float damage, Vector3 hitPoint, Vector3 dir, float force)
         {
             if (Effects.Instance != null) Effects.Instance.Burst(hitPoint, "#a8794f", 5, 3f, 0.4f);
-            if (system.Damage(index, damage)) Sfx.Crash(0.7f);
+            if (system.Damage(index, damage))
+            {   // you break it from the street: the house-door crash; a far-off break is heard as "some guy" smashing in
+                var cam = Camera.main; float dd = cam != null ? Vector3.Distance(cam.transform.position, hitPoint) : 0f;
+                if (dd < 25f) { if (!Sfx.Voice("when_a_door_breaks_inside_house", 0.45f)) Sfx.Crash(0.7f); }
+                else if (dd < 90f) { if (!Sfx.Voice("when_a_guy_break_a_door", 0.45f * (1f - dd / 90f))) Sfx.Crash(0.7f); }
+            }
         }
     }
 
@@ -151,12 +156,13 @@ namespace Hearthvale
             return best;
         }
 
+        public System.Action<Door> OnBroken;
         public bool Set(int i, DoorState st)
         {
             if (i < 0 || i >= list.Count) return false;
             var d = list[i];
             if (d.state == st) return false;
-            if (st == DoorState.Broken) Smash(d);
+            if (st == DoorState.Broken) { Smash(d); if (OnBroken != null) OnBroken(d); }
             if (st == DoorState.Open) d.locked = false;
             d.state = st;
             d.col.enabled = st == DoorState.Closed;

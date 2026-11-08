@@ -263,11 +263,11 @@ namespace Hearthvale
         void LateUpdate()
         {
             if (av == null) return;
-            bool inV = player.vehicle != null;
-            bool third = (inV ? !(garage != null && garage.FirstPerson) : player.ThirdPerson) && !player.dead;
+            bool inV = player.vehicle != null || player.pillion;
+            bool third = (player.pillion ? true : inV ? !(garage != null && garage.FirstPerson) : player.ThirdPerson) && !player.dead;
             if (third != shown) { shown = third; av.SetVisible(third); }
             if (inV != wasInV) { wasInV = inV; if (inV) av.SetGun(null); else Sync(); av.SetVisible(third); shown = third; }
-            if (inV) { av.root.transform.localRotation = Quaternion.identity; av.Pose("sit", Time.deltaTime, 0, 0, false); return; }
+            if (inV) { av.SetGun(null); av.armUp = 0f; armUpT = 0f; raiseHold = 0f; av.root.transform.localRotation = Quaternion.identity; av.Pose("sit", Time.deltaTime, 0, 0, false); return; }
             av.root.transform.localRotation = Quaternion.Euler(0, player.Yaw * Mathf.Rad2Deg - player.transform.eulerAngles.y, 0);
             // gun is only raised while aiming (RMB) or shooting (and briefly after); otherwise it hangs lowered
             if (arsenal.aim > 0.1f || HvInput.Down("LMB") || arsenal.kick > 0.02f) raiseHold = 1.2f; else raiseHold -= Time.deltaTime;

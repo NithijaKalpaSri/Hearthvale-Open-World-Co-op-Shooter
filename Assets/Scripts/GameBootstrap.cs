@@ -51,9 +51,12 @@ namespace Hearthvale
             var traps = new GameObject("Traps").AddComponent<Traps>(); traps.player = player; traps.ghosts = ghosts; traps.world = world; this.traps = traps;
             var garage = new GameObject("Garage").AddComponent<Garage>(); garage.world = world; garage.player = player; garage.Build(); garage.avatar = pav; pav.garage = garage; this.garage = garage;
             var vw = new GameObject("VehicleWeapons").AddComponent<VehicleWeapons>(); vw.garage = garage; vw.player = player; vw.world = world; this.vweap = vw;
+            var hb = new GameObject("HandBombs").AddComponent<HandBombs>(); hb.player = player; hb.world = world;
+            new GameObject("Wasted").AddComponent<Wasted>().player = player;
+            var fam = new GameObject("Family").AddComponent<Family>(); fam.world = world; fam.player = player;
             var arenaGo = new GameObject("ArenaShow").AddComponent<Arena>(); arenaGo.world = world; arenaGo.player = player; arenaGo.ghosts = ghosts; this.arena = arenaGo;
             var gasGo = new GameObject("Gas"); var gas = gasGo.AddComponent<GasClouds>();
-            var crit = new GameObject("Critters").AddComponent<CritterSystem>(); crit.world = world; crit.player = player; crit.gas = gas; crit.arsenal = arsenal; this.critters = crit; vw.critters = crit; traps.critters = crit;
+            var crit = new GameObject("Critters").AddComponent<CritterSystem>(); crit.world = world; crit.player = player; crit.gas = gas; crit.arsenal = arsenal; this.critters = crit; vw.critters = crit; hb.critters = crit; traps.critters = crit;
 
             var weere = new GameObject("Weere").AddComponent<Weere>(); weere.world = world; weere.player = player;
             var map = new GameObject("Map").AddComponent<MapUI>(); map.player = player; map.world = world; map.pickups = pickups; map.critters = crit; map.garage = garage;

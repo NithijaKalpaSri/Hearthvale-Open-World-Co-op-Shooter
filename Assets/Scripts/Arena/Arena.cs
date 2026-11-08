@@ -48,7 +48,7 @@ namespace Hearthvale
         static Material Lit(string n, string hex, float smooth = 0.2f, float metal = 0f) { return HvMaterials.Make(n, null, null, smooth, metal, hex, false); }
 
         // ---------------------------------------------------------- lifecycle
-        Light[] stageLamps = new Light[2]; AudioSource drum; AudioLowPassFilter lowpass; AudioClip drumClip; bool toldStart;
+        Light[] stageLamps = new Light[2]; AudioSource drum; AudioLowPassFilter lowpass; AudioClip drumClip; bool toldStart; AudioClip[] playlist; int track; bool themed; float cheerT = 8f;
 
         void Start()
         {
@@ -57,7 +57,7 @@ namespace Hearthvale
             BuildStadium(); BuildStage(); Flush(); BuildBand(); BuildCrowd(); BuildLostFans();
             player.SetStepOffset(0.45f);   // the stands and the stage steps are 0.4 m high
             drumClip = Resources.Load<AudioClip>("Voices/concert_drummer_B");
-            var dg = new GameObject("DrumSound"); dg.transform.SetParent(transform, false); drum = dg.AddComponent<AudioSource>(); drum.clip = drumClip; drum.loop = true; drum.playOnAwake = false;
+            var dg = new GameObject("DrumSound"); dg.transform.SetParent(transform, false); drum = dg.AddComponent<AudioSource>(); drum.clip = drumClip; drum.loop = false; drum.playOnAwake = false; playlist = new[] { drumClip, Resources.Load<AudioClip>("Voices/chipichipi"), Resources.Load<AudioClip>("Voices/mr_kottu") };
             drum.spatialBlend = 1f; drum.rolloffMode = AudioRolloffMode.Linear; drum.minDistance = 22f; drum.maxDistance = HearRange; drum.dopplerLevel = 0; drum.spread = 60;
             lowpass = dg.AddComponent<AudioLowPassFilter>(); lowpass.cutoffFrequency = 22000;
             for (int i = 0; i < 2; i++)
@@ -316,7 +316,7 @@ namespace Hearthvale
             string md = ModeAt(world.Hour);
             if (md != mode)
             {
-                mode = md; if (md != "show") StopDrum();
+                mode = md; if (md != "show") StopDrum(); if (md == "show") themed = false;
                 if (md == "haunt") { hauntNoticed = false; foreach (var g in lost) { g.pos = g.home; g.gone = 0; } }
                 if (md == "show") player.Toast("🎸 The concert at the Arena has started! Follow the drums north-west of town (until 8 PM)");
                 if (md == "haunt") player.Toast("🌑 The concert is over and the Arena goes dark… something stayed behind.");
@@ -337,9 +337,18 @@ namespace Hearthvale
             // ---- the drum: 3D sound, short range. Full volume inside the Arena, fading out to nothing ~80 m from the stage.
             if (show && distOut < HearRange + 10f && drumClip != null)
             {
-                if (!drum.isPlaying) drum.Play();
+                if (!drum.isPlaying)
+                {   // the band plays its songs back to back (drummer loop, chipichipi, mr kottu, ...)
+                    for (int k = 0; k < playlist.Length; k++) { track = (track + 1) % playlist.Length; if (playlist[track] != null) break; }
+                    drum.clip = playlist[track] != null ? playlist[track] : drumClip; drum.Play();
+                }
                 drum.transform.position = drummer.av.root.transform.position + Vector3.up * 1.2f;
                 bool inside = distOut <= 0.01f;
+                if (inside && !player.dead)
+                {
+                    if (!themed) { themed = true; Sfx.Voice("concert_theme_when_1st_entered_to_concert", 1f); }
+                    cheerT -= dt; if (cheerT <= 0) { cheerT = Random.Range(12f, 30f); Sfx.Voice("huuu_sfodnzz3", 0.9f); }   // the crowd roars now and then
+                }
                 drum.volume = inside ? 1f : 0.9f;                                   // the distance curve does the fading
                 lowpass.cutoffFrequency = Mathf.Lerp(lowpass.cutoffFrequency, inside ? 22000f : 1400f, 1 - Mathf.Exp(-dt * 6));   // muffled through the walls
             }

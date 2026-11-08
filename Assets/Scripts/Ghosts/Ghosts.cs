@@ -166,7 +166,7 @@ namespace Hearthvale
         }
 
         public bool suspended; public GhostModel Model(int k) { return models[k]; }
-        public void Jumpscare(int k, float dmg) { scareFace = faces[k]; scareKind = k; scareT = 1.1f; Sfx.Scream(1f); player.Damage(dmg); player.recoil = 1.5f; }
+        public void Jumpscare(int k, float dmg) { scareFace = faces[k]; scareKind = k; scareT = 1.1f; if (!Sfx.VoiceAny(1f, "huththto_horror_sound", "random_jumpscare")) Sfx.Scream(1f); player.Damage(dmg); player.recoil = 1.5f; }
         public bool freeze; public Vector3 ActivePos => active != null ? active.pos : Vector3.zero; // test hooks
         public void Force(int kind) { End(false); StartGhost(kind); }
 

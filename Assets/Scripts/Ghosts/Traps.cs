@@ -225,7 +225,7 @@ namespace Hearthvale
             cave = new CaveRun { trap = trap.pos, kind = Random.Range(0, 3), flashWas = player.flashOn }; Remove(trap);
             player.Toast("👻 The ground swallows you…"); player.frozen = true; player.inCave = false;
             if (ghosts != null) ghosts.suspended = true;
-            Sfx.Crackle(0.6f); Sfx.Stinger(0.5f); Rumble();
+            Sfx.Crackle(0.6f); Sfx.Stinger(0.5f); Sfx.Voice("horror_max_loud", 1f); Rumble();
         }
 
         public static AudioClip VoiceA;
@@ -258,7 +258,7 @@ namespace Hearthvale
                     Sfx.Crash(0.9f); if (fx != null) fx.Burst(player.transform.position + Vector3.up * 0.2f, "#6a5a4a", 14, 4f, 0.6f);
                     c.m = ghosts != null ? ghosts.Model(c.kind) : null; c.gpos = CavePos + new Vector3(8f, 0, Random.Range(-2f, 2f));
                     if (c.m != null) { c.m.root.transform.position = c.gpos; c.m.root.SetActive(true); }
-                    if (VoiceA == null) VoiceA = Resources.Load<AudioClip>("Voices/ghost_trap_A"); if (VoiceA != null) Sfx.Play(VoiceA, 1f);
+                    Sfx.Voice("huththto_horror_sound", 1f);   // voice A now belongs to the angry father (Family.cs)
                     Sfx.Stinger(0.7f); c.phase = "hunt"; c.t = 0;
                 }
             }

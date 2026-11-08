@@ -111,7 +111,7 @@ namespace Hearthvale
         // ------------------------------------------------------------------ per frame
         void Update()
         {
-            if (player.vehicle != null) { holder.gameObject.SetActive(false); return; }
+            if (player.vehicle != null || player.pillion) { holder.gameObject.SetActive(false); return; }
             if (cam == null || player == null) return;
             float dt = Mathf.Min(Time.deltaTime, 0.05f);
             bool active = player.InputActive && !player.dead;
